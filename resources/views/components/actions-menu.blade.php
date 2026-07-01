@@ -6,8 +6,15 @@
         x: 0, y: 0,
         place() {
             const r = $refs.btn.getBoundingClientRect();
-            this.y = r.bottom + 6;
-            this.x = Math.max(8, r.right - 176); /* 176px = w-44, right-aligned */
+            const w = 176, m = 8, gap = 6, estH = 240;
+            /* right-align to the button, but clamp inside the viewport */
+            this.x = Math.min(Math.max(m, r.right - w), window.innerWidth - w - m);
+            /* open below; flip above if it would overflow the bottom */
+            let y = r.bottom + gap;
+            if (y + estH > window.innerHeight) {
+                y = Math.max(m, r.top - gap - estH);
+            }
+            this.y = Math.min(y, window.innerHeight - m - 40);
         },
      }">
     <button x-ref="btn" type="button" aria-label="Actions"
@@ -28,7 +35,7 @@
              @scroll.window="$store.menu.current = null"
              @resize.window="$store.menu.current = null"
              :style="`position:fixed; top:${y}px; left:${x}px; width:11rem;`"
-             class="z-50 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 text-sm overflow-hidden">
+             class="z-50 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 text-sm max-h-[70vh] overflow-y-auto">
             {{ $slot }}
         </div>
     </template>

@@ -143,29 +143,34 @@
     @can('create assets')
         <div x-data="assetModal()" @open-asset-modal.window="openModal()" x-cloak>
             <div x-show="open" x-transition.opacity
-                 class="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4 flex items-start justify-center"
+                 class="fixed inset-0 z-50 bg-black/50 p-3 sm:p-4 flex items-center justify-center"
                  @click.self="close()">
-                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl my-8">
-                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-6 py-4">
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl max-h-[90dvh] flex flex-col">
+                    {{-- header (fixed) --}}
+                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-6 py-4 shrink-0">
                         <h3 class="font-semibold text-gray-800 dark:text-gray-100">New Asset</h3>
                         <button type="button" @click="close()"
                                 class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
                     </div>
 
-                    <form id="create-asset-form" @submit.prevent="submit($event)" class="px-6 py-4">
-                        @csrf
-                        <div x-show="Object.keys(errors).length"
-                             class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-3 text-sm text-red-700 dark:text-red-200">
-                            <ul class="list-disc list-inside space-y-1">
-                                <template x-for="(msgs, field) in errors" :key="field">
-                                    <li x-text="msgs[0]"></li>
-                                </template>
-                            </ul>
+                    <form id="create-asset-form" @submit.prevent="submit($event)" class="flex flex-col flex-1 min-h-0">
+                        {{-- scrollable body --}}
+                        <div class="flex-1 overflow-y-auto px-6 py-4">
+                            @csrf
+                            <div x-show="Object.keys(errors).length"
+                                 class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-3 text-sm text-red-700 dark:text-red-200">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <template x-for="(msgs, field) in errors" :key="field">
+                                        <li x-text="msgs[0]"></li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            @include('assets._form', ['asset' => new \App\Models\Asset(), 'companies' => $companies, 'categories' => $categories, 'models' => $models, 'locations' => $locations, 'employees' => $employees])
                         </div>
 
-                        @include('assets._form', ['asset' => new \App\Models\Asset(), 'companies' => $companies, 'categories' => $categories, 'models' => $models, 'locations' => $locations, 'employees' => $employees])
-
-                        <div class="mt-6 flex justify-end gap-2">
+                        {{-- footer (fixed) --}}
+                        <div class="shrink-0 border-t border-gray-100 dark:border-gray-700 px-6 py-4 flex justify-end gap-2">
                             <button type="button" @click="close()"
                                     class="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300">Cancel</button>
                             <button type="submit" :disabled="submitting"
