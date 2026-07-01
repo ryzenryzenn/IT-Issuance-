@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    /* Minimalist, elegant data tables */
+    .elegant-table { @apply min-w-full text-sm; }
+    .elegant-table thead { @apply text-left border-b border-gray-100 dark:border-gray-700/70; }
+    .elegant-table thead th { @apply px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500; }
+    .elegant-table tbody tr { @apply transition-colors; }
+    .elegant-table tbody tr:hover { @apply bg-gray-50/60 dark:bg-gray-900/30; }
+    .elegant-table td { @apply px-5 py-3.5 align-middle; }
+}
