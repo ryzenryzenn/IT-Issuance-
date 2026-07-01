@@ -33,7 +33,7 @@
                             'Asset Tag'               => $asset->asset_tag,
                             'Asset Model'             => $asset->model?->name ?? '—',
                             'Serial Number'           => $asset->serial_number ?? '—',
-                            'Assigned User'           => $asset->assigned_user ?? '—',
+                            'Assigned To'             => $asset->assigneeLabel(),
                             'Location'                => $asset->location?->name ?? '—',
                             'RustDesk ID'             => $asset->rustdesk_id ?? '—',
                             'Windows License Key'     => $asset->windows_license_key ?? '—',
@@ -79,7 +79,7 @@
                         <ul class="space-y-1">
                             <li><span class="text-gray-500 dark:text-gray-400">Model:</span> {{ $asset->model?->name ?: 'N/A' }}</li>
                             <li><span class="text-gray-500 dark:text-gray-400">Serial:</span> {{ $asset->serial_number ?: 'N/A' }}</li>
-                            <li><span class="text-gray-500 dark:text-gray-400">Assignee:</span> {{ $asset->assigned_user ?: 'Unassigned' }}</li>
+                            <li><span class="text-gray-500 dark:text-gray-400">Assignee:</span> {{ $asset->assignee?->name ?: 'Unassigned' }}</li>
                         </ul>
                     </div>
                 </div>
@@ -93,9 +93,21 @@
                         <form method="POST" action="{{ route('assets.transfer', $asset) }}" class="space-y-3">
                             @csrf
                             <div>
-                                <x-input-label for="to_user" value="Transfer to (new assigned user) *" />
-                                <x-text-input id="to_user" name="to_user" required class="mt-1 block w-full" />
-                                <x-input-error :messages="$errors->get('to_user')" class="mt-1" />
+                                <x-input-label for="to_assignee" value="Transfer to (new assignee) *" />
+                                <select id="to_assignee" name="to_assignee" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
+                                    <option value="">— Select —</option>
+                                    <optgroup label="Employees">
+                                        @foreach ($employees as $e)
+                                            <option value="employee:{{ $e->id }}">{{ $e->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                    <optgroup label="Locations (shared / generic)">
+                                        @foreach ($locations as $l)
+                                            <option value="location:{{ $l->id }}">{{ $l->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                                <x-input-error :messages="$errors->get('to_assignee_id')" class="mt-1" />
                             </div>
                             <div>
                                 <x-input-label for="to_location_id" value="New location" />

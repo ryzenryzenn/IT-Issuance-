@@ -2,14 +2,22 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ResolvesAssignee;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateAssetRequest extends FormRequest
 {
+    use ResolvesAssignee;
+
     public function authorize(): bool
     {
         return $this->user()->can('update assets');
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->mergeAssignee();
     }
 
     public function rules(): array
@@ -19,8 +27,7 @@ class UpdateAssetRequest extends FormRequest
             'category_id'                      => ['required', 'exists:categories,id'],
             'asset_tag'                        => ['required', 'string', 'max:100', Rule::unique('assets', 'asset_tag')->ignore($this->route('asset'))],
             'model_id'                         => ['required', 'exists:asset_models,id'],
-            'serial_number'                    => ['nullable', 'string', 'max:255'],
-            'assigned_user'                    => ['nullable', 'string', 'max:255'],
+            'serial_number'                    => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')->whereNull('deleted_at')->ignore($this->route('asset'))],
             'location_id'                      => ['nullable', 'exists:locations,id'],
             'rustdesk_id'                      => ['nullable', 'string', 'max:50'],
             'windows_license_key'              => ['nullable', 'string', 'max:255'],
@@ -28,6 +35,6 @@ class UpdateAssetRequest extends FormRequest
             'accountability_signed'            => ['required', Rule::in(['yes', 'pending'])],
             'accountability_uploaded_snipeit'  => ['required', Rule::in(['yes', 'pending'])],
             'date_issued'                      => ['nullable', 'date'],
-        ];
+        ] + $this->assigneeRules();
     }
 }

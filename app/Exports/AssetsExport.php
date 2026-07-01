@@ -33,7 +33,7 @@ class AssetsExport implements FromQuery, WithHeadings, WithMapping
             $asset->model?->name,
             $asset->serial_number,
             $asset->category?->name,
-            $asset->assigned_user,
+            $asset->assignee?->name,
             $asset->location?->name,
             $asset->rustdesk_id,
             $asset->accountability_signed,

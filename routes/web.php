@@ -7,6 +7,7 @@ use App\Http\Controllers\AssetTransferController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::resource('companies', CompanyController::class)->except(['show']);
     Route::resource('categories', CategoryController::class)->except(['show']);
     Route::resource('locations', LocationController::class)->except(['show']);
+    Route::resource('employees', EmployeeController::class)->except(['show']);
     Route::resource('asset-models', AssetModelController::class)
         ->parameters(['asset-models' => 'assetModel'])
         ->except(['show']);

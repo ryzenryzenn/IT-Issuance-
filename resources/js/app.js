@@ -8,6 +8,9 @@ window.Alpine = Alpine;
 window.Swal = Swal;
 window.ApexCharts = ApexCharts;
 
+// Tracks which row action menu (kebab) is currently open — only one at a time.
+Alpine.store('menu', { current: null });
+
 Alpine.start();
 
 /**

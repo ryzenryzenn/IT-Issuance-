@@ -69,7 +69,7 @@ class ReportController extends Controller
     private function filteredAssets(Request $request)
     {
         return Asset::query()
-            ->with(['company', 'category', 'model', 'location'])
+            ->with(['company', 'category', 'model', 'location', 'assignee'])
             ->when($request->filled('company_id'),  fn ($q) => $q->where('company_id', $request->company_id))
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
             ->when($request->filled('accountability_signed'), fn ($q) => $q->where('accountability_signed', $request->accountability_signed))

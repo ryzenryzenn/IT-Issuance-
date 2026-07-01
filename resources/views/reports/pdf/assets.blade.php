@@ -45,7 +45,7 @@
                     <td>{{ $a->company?->name }}</td>
                     <td>{{ $a->category?->name }}</td>
                     <td>{{ $a->model?->name }}</td>
-                    <td>{{ $a->assigned_user }}</td>
+                    <td>{{ $a->assignee?->name }}</td>
                     <td>{{ $a->location?->name }}</td>
                     <td>{{ $a->rustdesk_id }}</td>
                     <td class="{{ $a->accountability_signed }}">{{ ucfirst($a->accountability_signed) }}</td>

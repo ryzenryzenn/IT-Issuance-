@@ -19,6 +19,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view categories', 'create categories', 'update categories', 'delete categories',
             'view locations', 'create locations', 'update locations', 'delete locations',
             'view asset models', 'create asset models', 'update asset models', 'delete asset models',
+            'view employees', 'create employees', 'update employees', 'delete employees',
             'view users', 'create users', 'update users', 'delete users',
             'view audit logs',
             'upload accountability files', 'delete accountability files',
@@ -41,6 +42,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view categories', 'create categories', 'update categories',
             'view locations', 'create locations', 'update locations',
             'view asset models', 'create asset models', 'update asset models',
+            'view employees', 'create employees', 'update employees',
             'view audit logs',
             'upload accountability files', 'delete accountability files',
             'export reports',
@@ -48,7 +50,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         $viewer->syncPermissions([
             'view assets', 'view companies', 'view categories',
-            'view locations', 'view asset models', 'export reports',
+            'view locations', 'view asset models', 'view employees', 'export reports',
         ]);
     }
 }

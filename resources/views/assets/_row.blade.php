@@ -10,7 +10,10 @@
         <a href="{{ route('assets.show', $a) }}" class="hover:underline">{{ $a->asset_tag }}</a>
     </td>
     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->model?->name ?? '—' }}</td>
-    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->assigned_user ?? '—' }}</td>
+    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+        {{ $a->assignee?->name ?? '—' }}
+        @if ($a->assignee_type === 'location')<span class="text-xs text-gray-400">(shared)</span>@endif
+    </td>
     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->location?->name ?? '—' }}</td>
     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ optional($a->date_issued)->format('Y-m-d') ?? '—' }}</td>
     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->serial_number ?? '—' }}</td>
@@ -18,19 +21,21 @@
     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->category?->name }}</td>
     <td class="px-4 py-3"><x-status-badge :status="$a->accountability_signed" /></td>
     <td class="px-4 py-3"><x-status-badge :status="$a->accountability_uploaded_snipeit" /></td>
-    <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-        <a href="{{ route('assets.show', $a) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">View</a>
-        <a href="{{ route('assets.transmittal', ['ids' => $a->id]) }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">Transmittal</a>
-        <a href="{{ route('assets.gate-pass', ['ids' => $a->id]) }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">Gate Pass</a>
-        @can('update', $a)
-            <a href="{{ route('assets.edit', $a) }}" class="text-gray-600 dark:text-gray-300 hover:underline">Edit</a>
-        @endcan
-        @can('delete', $a)
-            <form action="{{ route('assets.destroy', $a) }}" method="POST" class="inline"
-                  data-confirm="Delete this asset? An admin can restore it.">
-                @csrf @method('DELETE')
-                <button class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
-            </form>
-        @endcan
+    <td class="px-4 py-3 text-right">
+        <x-actions-menu>
+            <a href="{{ route('assets.show', $a) }}" class="menu-item">View</a>
+            <a href="{{ route('assets.transmittal', ['ids' => $a->id]) }}" target="_blank" class="menu-item">Transmittal</a>
+            <a href="{{ route('assets.gate-pass', ['ids' => $a->id]) }}" target="_blank" class="menu-item">Gate Pass</a>
+            @can('update', $a)
+                <a href="{{ route('assets.edit', $a) }}" class="menu-item">Edit</a>
+            @endcan
+            @can('delete', $a)
+                <form action="{{ route('assets.destroy', $a) }}" method="POST"
+                      data-confirm="Delete this asset? An admin can restore it.">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="menu-item menu-item-danger">Delete</button>
+                </form>
+            @endcan
+        </x-actions-menu>
     </td>
 </tr>

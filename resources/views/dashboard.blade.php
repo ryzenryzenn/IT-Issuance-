@@ -33,6 +33,52 @@
                 @endforeach
             </div>
 
+            {{-- Today + Calendar --}}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-xl shadow-sm p-5 flex flex-col justify-center">
+                    <p class="text-white/60 text-xs font-medium uppercase tracking-wider">Today</p>
+                    <p class="mt-1 text-2xl font-bold leading-tight">{{ now()->format('l') }}</p>
+                    <p class="text-white/80 text-sm">{{ now()->format('F j, Y') }}</p>
+                    <p id="live-clock" class="mt-2 text-xl font-semibold tabular-nums text-accent-400">{{ now()->format('h:i:s A') }}</p>
+                </div>
+
+                <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ now()->format('F Y') }}</h3>
+                        <span class="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"></span> assets issued
+                        </span>
+                    </div>
+                    @php
+                        $first        = now()->startOfMonth();
+                        $daysInMonth  = $first->daysInMonth;
+                        $startWeekday = (int) $first->dayOfWeek; // 0 = Sunday
+                        $todayDay     = now()->day;
+                    @endphp
+                    <div class="grid grid-cols-7 gap-1 text-center">
+                        @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $d)
+                            <div class="py-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500">{{ $d }}</div>
+                        @endforeach
+                        @for ($i = 0; $i < $startWeekday; $i++)
+                            <div></div>
+                        @endfor
+                        @for ($day = 1; $day <= $daysInMonth; $day++)
+                            @php $count = $issuedDays[$day] ?? 0; @endphp
+                            <div class="relative h-8 flex items-center justify-center text-[13px] rounded-md
+                                        {{ $day === $todayDay
+                                            ? 'bg-accent-400 text-indigo-900 font-bold'
+                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50' }}">
+                                {{ $day }}
+                                @if ($count > 0)
+                                    <span title="{{ $count }} asset(s) issued"
+                                          class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full {{ $day === $todayDay ? 'bg-indigo-900' : 'bg-indigo-500' }}"></span>
+                                @endif
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+
             {{-- Charts --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
@@ -90,7 +136,7 @@
                                             @endcan
                                         </td>
                                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->model?->name }}</td>
-                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->assigned_user ?? '—' }}</td>
+                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->assignee?->name ?? '—' }}</td>
                                         <td class="px-4 py-3"><x-status-badge :status="$a->accountability_signed" /></td>
                                         <td class="px-4 py-3"><x-status-badge :status="$a->accountability_uploaded_snipeit" /></td>
                                     </tr>
@@ -128,6 +174,15 @@
 
     @push('scripts')
     <script>
+        // Live clock in the "Today" card
+        (function () {
+            const clock = document.getElementById('live-clock');
+            if (!clock) return;
+            const tick = () => clock.textContent = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            tick();
+            setInterval(tick, 1000);
+        })();
+
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof ApexCharts === 'undefined') { console.error('ApexCharts not loaded'); return; }
 

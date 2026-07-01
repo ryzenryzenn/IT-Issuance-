@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\Employee;
 use App\Models\Location;
 use Illuminate\Database\Seeder;
 
@@ -73,13 +74,20 @@ class AssetSeeder extends Seeder
         ];
 
         foreach ($rows as $row) {
-            // Resolve the free-text model/location into managed lookup records.
+            // Resolve the free-text model/location/assignee into managed records.
             $model    = AssetModel::firstOrCreate(['name' => $row['asset_model']]);
             $location = Location::firstOrCreate(['name' => $row['location']]);
 
             $row['model_id']    = $model->id;
             $row['location_id'] = $location->id;
-            unset($row['asset_model'], $row['location']);
+
+            if (! empty($row['assigned_user'])) {
+                $employee = Employee::firstOrCreate(['name' => $row['assigned_user']], ['is_active' => true]);
+                $row['assignee_type'] = 'employee';
+                $row['assignee_id']   = $employee->id;
+            }
+
+            unset($row['asset_model'], $row['location'], $row['assigned_user']);
 
             Asset::firstOrCreate(['asset_tag' => $row['asset_tag']], $row);
         }

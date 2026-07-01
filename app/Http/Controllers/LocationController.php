@@ -56,7 +56,7 @@ class LocationController extends Controller
     {
         $this->authorize('delete', $location);
 
-        if ($location->assets()->exists()) {
+        if ($location->assets()->exists() || $location->assignedAssets()->exists()) {
             return back()->with('error', 'Cannot delete a location that still has assets.');
         }
 

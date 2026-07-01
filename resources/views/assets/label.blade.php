@@ -59,7 +59,7 @@
             </div>
             <div class="row">
                 <div class="lbl">Assignee</div>
-                <div class="val">{{ $asset->assigned_user ?: 'Unassigned' }}</div>
+                <div class="val">{{ $asset->assignee?->name ?: 'Unassigned' }}</div>
             </div>
         </div>
     </div>

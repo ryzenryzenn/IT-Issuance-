@@ -50,7 +50,9 @@
                                 <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ class_basename($a->subject_type) }} #{{ $a->subject_id }}</td>
                                 <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->description }}</td>
                                 <td class="px-4 py-3 text-right">
-                                    <a href="{{ route('audit-logs.show', $a) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Details</a>
+                                    <x-actions-menu>
+                                        <a href="{{ route('audit-logs.show', $a) }}" class="menu-item">View details</a>
+                                    </x-actions-menu>
                                 </td>
                             </tr>
                         @empty

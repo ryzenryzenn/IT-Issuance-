@@ -83,6 +83,15 @@
             </x-sidebar-link>
         @endcan
 
+        @can('view employees')
+            <x-sidebar-link :href="route('employees.index')" :active="request()->routeIs('employees.*')">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Employees</span>
+            </x-sidebar-link>
+        @endcan
+
         @can('view asset models')
             <x-sidebar-link :href="route('asset-models.index')" :active="request()->routeIs('asset-models.*')">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">

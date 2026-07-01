@@ -96,13 +96,19 @@
                                 </th>
                             @endcan
                             @php
-                                $sortable = [
-                                    'asset_tag' => 'Asset Tag', 'asset_model' => 'Model',
-                                    'assigned_user' => 'Assigned', 'location' => 'Location',
-                                    'date_issued' => 'Date Issued',
-                                ];
+                                $sortableBefore = ['asset_tag' => 'Asset Tag', 'asset_model' => 'Model'];
+                                $sortableAfter  = ['location' => 'Location', 'date_issued' => 'Date Issued'];
                             @endphp
-                            @foreach ($sortable as $col => $label)
+                            @foreach ($sortableBefore as $col => $label)
+                                @php $nextDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc'; @endphp
+                                <th class="px-4 py-3">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort' => $col, 'dir' => $nextDir]) }}" class="hover:underline">
+                                        {{ $label }} @if($sort === $col)<span>{{ $dir === 'asc' ? '▲' : '▼' }}</span>@endif
+                                    </a>
+                                </th>
+                            @endforeach
+                            <th class="px-4 py-3">Assigned</th>
+                            @foreach ($sortableAfter as $col => $label)
                                 @php $nextDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc'; @endphp
                                 <th class="px-4 py-3">
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => $col, 'dir' => $nextDir]) }}" class="hover:underline">
@@ -157,7 +163,7 @@
                             </ul>
                         </div>
 
-                        @include('assets._form', ['asset' => new \App\Models\Asset(), 'companies' => $companies, 'categories' => $categories, 'models' => $models, 'locations' => $locations])
+                        @include('assets._form', ['asset' => new \App\Models\Asset(), 'companies' => $companies, 'categories' => $categories, 'models' => $models, 'locations' => $locations, 'employees' => $employees])
 
                         <div class="mt-6 flex justify-end gap-2">
                             <button type="button" @click="close()"

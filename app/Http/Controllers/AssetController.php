@@ -8,6 +8,7 @@ use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\Employee;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -20,13 +21,13 @@ class AssetController extends Controller
         $sort = $request->input('sort', 'created_at');
         $dir  = $request->input('dir', 'desc') === 'asc' ? 'asc' : 'desc';
 
-        $allowedSorts = ['asset_tag', 'asset_model', 'assigned_user', 'location', 'date_issued', 'created_at'];
+        $allowedSorts = ['asset_tag', 'asset_model', 'location', 'date_issued', 'created_at'];
         if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'created_at';
         }
 
         $query = Asset::query()
-            ->with(['company', 'category', 'model', 'location'])
+            ->with(['company', 'category', 'model', 'location', 'assignee'])
             ->search($request->input('q'))
             ->when($request->filled('company_id'), fn ($q) => $q->where('company_id', $request->company_id))
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
@@ -51,8 +52,9 @@ class AssetController extends Controller
         $categories = Category::orderBy('name')->get();
         $models     = AssetModel::orderBy('name')->get();
         $locations  = Location::orderBy('name')->get();
+        $employees  = Employee::where('is_active', true)->orderBy('name')->get();
 
-        return view('assets.index', compact('assets', 'companies', 'categories', 'models', 'locations', 'sort', 'dir'));
+        return view('assets.index', compact('assets', 'companies', 'categories', 'models', 'locations', 'employees', 'sort', 'dir'));
     }
 
     public function create()
@@ -63,6 +65,7 @@ class AssetController extends Controller
             'categories' => Category::orderBy('name')->get(),
             'models'     => AssetModel::orderBy('name')->get(),
             'locations'  => Location::orderBy('name')->get(),
+            'employees'  => Employee::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -71,7 +74,7 @@ class AssetController extends Controller
         $asset = Asset::create($request->validated());
 
         if ($request->expectsJson()) {
-            $asset->load(['company', 'category', 'model', 'location']);
+            $asset->load(['company', 'category', 'model', 'location', 'assignee']);
 
             return response()->json([
                 'id'      => $asset->id,
@@ -87,7 +90,7 @@ class AssetController extends Controller
     public function show(Asset $asset)
     {
         $this->authorize('view', $asset);
-        $asset->load(['company', 'category', 'model', 'location', 'transfers.transferredBy', 'accountabilityFiles.uploadedBy']);
+        $asset->load(['company', 'category', 'model', 'location', 'assignee', 'transfers.transferredBy', 'accountabilityFiles.uploadedBy']);
 
         $activities = \Spatie\Activitylog\Models\Activity::where('subject_type', Asset::class)
             ->where('subject_id', $asset->id)
@@ -99,8 +102,9 @@ class AssetController extends Controller
         $qrSvg = QrCode::format('svg')->size(180)->margin(1)->generate($asset->qrPayload());
 
         $locations = Location::orderBy('name')->get();
+        $employees = Employee::where('is_active', true)->orderBy('name')->get();
 
-        return view('assets.show', compact('asset', 'activities', 'qrSvg', 'locations'));
+        return view('assets.show', compact('asset', 'activities', 'qrSvg', 'locations', 'employees'));
     }
 
     public function label(Asset $asset)
@@ -162,6 +166,7 @@ class AssetController extends Controller
             'categories' => Category::orderBy('name')->get(),
             'models'     => AssetModel::orderBy('name')->get(),
             'locations'  => Location::orderBy('name')->get(),
+            'employees'  => Employee::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 

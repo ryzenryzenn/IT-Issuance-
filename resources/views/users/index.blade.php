@@ -41,16 +41,22 @@
                                         <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">Inactive</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                                    @can('update', $u)
-                                        <a href="{{ route('users.edit', $u) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Edit</a>
-                                    @endcan
-                                    @can('delete', $u)
-                                        <form action="{{ route('users.destroy', $u) }}" method="POST" class="inline" data-confirm="Delete this user? This cannot be undone.">
-                                            @csrf @method('DELETE')
-                                            <button class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
-                                        </form>
-                                    @endcan
+                                <td class="px-4 py-3 text-right">
+                                    @if (Auth::user()->can('update', $u) || Auth::user()->can('delete', $u))
+                                        <x-actions-menu>
+                                            @can('update', $u)
+                                                <a href="{{ route('users.edit', $u) }}" class="menu-item">Edit</a>
+                                            @endcan
+                                            @can('delete', $u)
+                                                <form action="{{ route('users.destroy', $u) }}" method="POST" data-confirm="Delete this user? This cannot be undone.">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="menu-item menu-item-danger">Delete</button>
+                                                </form>
+                                            @endcan
+                                        </x-actions-menu>
+                                    @else
+                                        <span class="text-gray-300 dark:text-gray-600">—</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

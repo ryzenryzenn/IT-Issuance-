@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -24,7 +25,8 @@ class Asset extends Model
         'asset_tag',
         'model_id',
         'serial_number',
-        'assigned_user',
+        'assignee_type',
+        'assignee_id',
         'location_id',
         'rustdesk_id',
         'windows_license_key',
@@ -47,7 +49,7 @@ class Asset extends Model
         return LogOptions::defaults()
             ->logOnly([
                 'company_id', 'category_id', 'asset_tag', 'model_id', 'serial_number',
-                'assigned_user', 'location_id', 'rustdesk_id',
+                'assignee_type', 'assignee_id', 'location_id', 'rustdesk_id',
                 'latest_updates_remarks',
                 'accountability_signed', 'accountability_uploaded_snipeit',
                 'date_issued',
@@ -67,8 +69,18 @@ class Asset extends Model
         return implode("\n", [
             'Model: '.($this->model?->name ?: '—'),
             'Serial: '.($this->serial_number ?: 'N/A'),
-            'Assignee: '.($this->assigned_user ?: 'Unassigned'),
+            'Assignee: '.($this->assignee?->name ?: 'Unassigned'),
         ]);
+    }
+
+    /** Label describing whether the assignee is an employee or a shared location. */
+    public function assigneeLabel(): string
+    {
+        return match ($this->assignee_type) {
+            'employee' => $this->assignee?->name ?? 'Unassigned',
+            'location' => ($this->assignee?->name ?? 'Unknown').' (shared)',
+            default    => 'Unassigned',
+        };
     }
 
     public function company(): BelongsTo
@@ -89,6 +101,12 @@ class Asset extends Model
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
+    }
+
+    /** The assignee: an Employee (specific holder) or a Location (shared/generic asset). */
+    public function assignee(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     public function transfers(): HasMany
@@ -112,11 +130,11 @@ class Asset extends Model
         return $query->where(function ($q) use ($like) {
             $q->where('asset_tag', 'like', $like)
                 ->orWhere('serial_number', 'like', $like)
-                ->orWhere('assigned_user', 'like', $like)
                 ->orWhere('rustdesk_id', 'like', $like)
                 ->orWhere('latest_updates_remarks', 'like', $like)
                 ->orWhereHas('model', fn ($m) => $m->where('name', 'like', $like))
-                ->orWhereHas('location', fn ($l) => $l->where('name', 'like', $like));
+                ->orWhereHas('location', fn ($l) => $l->where('name', 'like', $like))
+                ->orWhereHasMorph('assignee', ['employee', 'location'], fn ($a) => $a->where('name', 'like', $like));
         });
     }
 
@@ -132,6 +150,6 @@ class Asset extends Model
 
     public function scopeAssigned(Builder $query): Builder
     {
-        return $query->whereNotNull('assigned_user')->where('assigned_user', '!=', '');
+        return $query->whereNotNull('assignee_id');
     }
 }

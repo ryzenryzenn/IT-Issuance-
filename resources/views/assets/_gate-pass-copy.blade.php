@@ -34,7 +34,7 @@
             @foreach ($assets as $a)
                 <tr>
                     <td class="qty">1</td>
-                    <td class="desc">{{ $a->asset_tag }} - {{ $a->model?->name ?: 'N/A' }} ({{ $a->category?->name ?: 'N/A' }}) - {{ $a->assigned_user ?: 'N/A' }} going to {{ $a->location?->name ?: 'N/A' }}</td>
+                    <td class="desc">{{ $a->asset_tag }} - {{ $a->model?->name ?: 'N/A' }} ({{ $a->category?->name ?: 'N/A' }}) - {{ $a->assignee?->name ?: 'N/A' }} going to {{ $a->location?->name ?: 'N/A' }}</td>
                 </tr>
             @endforeach
             {{-- pad to keep the form's shape --}}

@@ -1,4 +1,6 @@
-@props(['asset', 'companies', 'categories', 'models', 'locations'])
+@props(['asset', 'companies', 'categories', 'models', 'locations', 'employees'])
+
+@php $assigneeValue = old('assignee', $asset->assignee_id ? $asset->assignee_type.':'.$asset->assignee_id : ''); @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
@@ -47,9 +49,22 @@
     </div>
 
     <div>
-        <x-input-label for="assigned_user" value="Assigned User" />
-        <x-text-input id="assigned_user" name="assigned_user" :value="old('assigned_user', $asset->assigned_user)" class="mt-1 block w-full" />
-        <x-input-error :messages="$errors->get('assigned_user')" class="mt-1" />
+        <x-input-label for="assignee" value="Assigned To" />
+        <select id="assignee" name="assignee" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
+            <option value="">— Unassigned —</option>
+            <optgroup label="Employees">
+                @foreach ($employees as $e)
+                    <option value="employee:{{ $e->id }}" @selected($assigneeValue === 'employee:'.$e->id)>{{ $e->name }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="Locations (shared / generic asset)">
+                @foreach ($locations as $l)
+                    <option value="location:{{ $l->id }}" @selected($assigneeValue === 'location:'.$l->id)>{{ $l->name }}</option>
+                @endforeach
+            </optgroup>
+        </select>
+        <x-input-error :messages="$errors->get('assignee_id')" class="mt-1" />
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Pick a person, or a location for a shared/generic asset anyone can use.</p>
     </div>
 
     <div>

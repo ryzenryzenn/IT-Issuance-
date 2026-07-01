@@ -68,7 +68,7 @@
                     <td>{{ $a->asset_tag }}</td>
                     <td>{{ $a->category?->name ?: 'N/A' }}</td>
                     <td>{{ $a->model?->name ?: 'N/A' }}</td>
-                    <td>{{ $a->assigned_user ?: 'N/A' }} going to {{ $a->location?->name ?: 'N/A' }}</td>
+                    <td>{{ $a->assignee?->name ?: 'N/A' }} going to {{ $a->location?->name ?: 'N/A' }}</td>
                 </tr>
             @endforeach
             {{-- pad to a minimum of 5 rows so the form keeps its shape --}}
