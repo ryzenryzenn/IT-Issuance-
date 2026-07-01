@@ -24,6 +24,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view audit logs',
             'upload accountability files', 'delete accountability files',
             'export reports',
+            'view trash', 'restore records', 'force delete records',
         ];
 
         foreach ($permissions as $name) {

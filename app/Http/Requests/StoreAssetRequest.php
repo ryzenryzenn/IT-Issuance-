@@ -27,7 +27,7 @@ class StoreAssetRequest extends FormRequest
             'category_id'                      => ['required', 'exists:categories,id'],
             'asset_tag'                        => ['required', 'string', 'max:100', 'unique:assets,asset_tag'],
             'model_id'                         => ['required', 'exists:asset_models,id'],
-            'serial_number'                    => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')->whereNull('deleted_at')],
+            'serial_number'                    => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')],
             'location_id'                      => ['nullable', 'exists:locations,id'],
             'rustdesk_id'                      => ['nullable', 'string', 'max:50'],
             'windows_license_key'              => ['nullable', 'string', 'max:255'],

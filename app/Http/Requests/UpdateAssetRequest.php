@@ -27,7 +27,7 @@ class UpdateAssetRequest extends FormRequest
             'category_id'                      => ['required', 'exists:categories,id'],
             'asset_tag'                        => ['required', 'string', 'max:100', Rule::unique('assets', 'asset_tag')->ignore($this->route('asset'))],
             'model_id'                         => ['required', 'exists:asset_models,id'],
-            'serial_number'                    => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')->whereNull('deleted_at')->ignore($this->route('asset'))],
+            'serial_number'                    => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')->ignore($this->route('asset'))],
             'location_id'                      => ['nullable', 'exists:locations,id'],
             'rustdesk_id'                      => ['nullable', 'string', 'max:50'],
             'windows_license_key'              => ['nullable', 'string', 'max:255'],
