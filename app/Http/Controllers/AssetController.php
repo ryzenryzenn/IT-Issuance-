@@ -53,8 +53,15 @@ class AssetController extends Controller
         $models     = AssetModel::orderBy('name')->get();
         $locations  = Location::orderBy('name')->get();
         $employees  = Employee::where('is_active', true)->orderBy('name')->get();
+        $assetOptions = Asset::with('assignee')->orderBy('asset_tag')->get()
+            ->map(fn ($a) => [
+                'id'        => $a->id,
+                'asset_tag' => $a->asset_tag,
+                'serial'    => $a->serial_number,
+                'assignee'  => $a->assignee?->name,
+            ])->values();
 
-        return view('assets.index', compact('assets', 'companies', 'categories', 'models', 'locations', 'employees', 'sort', 'dir'));
+        return view('assets.index', compact('assets', 'companies', 'categories', 'models', 'locations', 'employees', 'assetOptions', 'sort', 'dir'));
     }
 
     public function create()

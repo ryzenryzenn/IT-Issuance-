@@ -1,7 +1,7 @@
 <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30">
     @can('delete assets')
         <td class="px-4 py-3">
-            <input type="checkbox" name="ids[]" value="{{ $a->id }}" x-model.number="selected" form="bulk-delete-form"
+            <input type="checkbox" value="{{ $a->id }}" x-model.number="selected"
                    aria-label="Select asset {{ $a->asset_tag }}"
                    class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500">
         </td>

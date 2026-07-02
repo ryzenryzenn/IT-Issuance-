@@ -63,7 +63,61 @@
                       data-confirm-button="Yes, delete them">
                     @csrf
                     @method('DELETE')
-                    <div class="flex items-center gap-3 mb-2">
+                    {{-- selected asset ids (works across pages, from row checks or the search picker) --}}
+                    <template x-for="id in selected" :key="id">
+                        <input type="hidden" name="ids[]" :value="id">
+                    </template>
+                    <div class="flex flex-wrap items-center gap-3 mb-2">
+                        {{-- Searchable multi-select: find assets by tag and tick them --}}
+                        <div x-data="{
+                                open: false,
+                                search: '',
+                                options: @js($assetOptions),
+                                get filtered() {
+                                    const s = this.search.trim().toLowerCase();
+                                    if (! s) return this.options;
+                                    return this.options.filter(o =>
+                                        (o.asset_tag || '').toLowerCase().includes(s) ||
+                                        (o.serial || '').toLowerCase().includes(s) ||
+                                        (o.assignee || '').toLowerCase().includes(s));
+                                },
+                             }" class="relative">
+                            <button type="button" @click="open = ! open"
+                                    class="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+                                </svg>
+                                Select assets
+                                <span x-show="selected.length" x-cloak class="text-xs rounded-full bg-indigo-600 text-white px-1.5" x-text="selected.length"></span>
+                            </button>
+                            <div x-show="open" x-cloak @click.outside="open = false"
+                                 x-transition
+                                 class="absolute z-30 mt-1 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                                <div class="p-2 border-b border-gray-100 dark:border-gray-700">
+                                    <input type="text" x-model="search" placeholder="Search tag, serial, or assignee…" autocomplete="off"
+                                           class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
+                                </div>
+                                <div class="max-h-64 overflow-y-auto py-1">
+                                    <template x-for="opt in filtered" :key="opt.id">
+                                        <label class="flex items-start gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                            <input type="checkbox" :value="opt.id" x-model.number="selected"
+                                                   class="mt-0.5 rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500">
+                                            <span class="min-w-0">
+                                                <span class="block text-gray-700 dark:text-gray-200 truncate" x-text="opt.asset_tag"></span>
+                                                <span class="block text-xs text-gray-400 truncate"
+                                                      x-text="[opt.serial, opt.assignee].filter(Boolean).join(' · ')"></span>
+                                            </span>
+                                        </label>
+                                    </template>
+                                    <p x-show="filtered.length === 0" class="px-3 py-3 text-sm text-center text-gray-400">No matches</p>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-700 text-sm">
+                                    <button type="button" @click="selected = []" class="text-red-600 dark:text-red-400 hover:underline">Clear all</button>
+                                    <button type="button" @click="open = false" class="text-indigo-600 dark:text-indigo-400 hover:underline">Done</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <span class="text-sm text-gray-500 dark:text-gray-400"><span x-text="selected.length">0</span> selected</span>
                         <button type="button" :disabled="selected.length === 0"
                                 @click="window.open('{{ route('assets.transmittal') }}?ids=' + selected.join(','), '_blank')"
