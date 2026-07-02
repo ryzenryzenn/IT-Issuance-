@@ -11,6 +11,25 @@ window.ApexCharts = ApexCharts;
 // Tracks which row action menu (kebab) is currently open — only one at a time.
 Alpine.store('menu', { current: null });
 
+// AJAX pagination for dashboard cards — swaps the card body in place, no page reload.
+Alpine.data('ajaxPager', () => ({
+    loading: false,
+    async go(e) {
+        const link = e.target.closest('a');
+        if (! link || ! this.$root.contains(link)) return;
+        e.preventDefault();
+        this.loading = true;
+        try {
+            const res = await fetch(link.getAttribute('href'), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (res.ok) {
+                this.$root.querySelector('[data-pager-body]').innerHTML = await res.text();
+            }
+        } finally {
+            this.loading = false;
+        }
+    },
+}));
+
 Alpine.start();
 
 /**

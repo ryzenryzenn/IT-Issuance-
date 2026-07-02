@@ -20,8 +20,8 @@ class DashboardController extends Controller
         $totalCategories     = Category::count();
         $signedAssets        = Asset::where('accountability_signed', Asset::ACCOUNTABILITY_YES)->count();
 
-        $recentAssets   = Asset::with(['company', 'category', 'model', 'assignee'])->latest()->limit(8)->get();
-        $recentActivity = Activity::with('causer')->latest()->limit(10)->get();
+        $recentAssets   = $this->recentAssetsPaginator();
+        $recentActivity = $this->recentActivityPaginator();
 
         $perCompany = Company::withCount('assets')->orderByDesc('assets_count')->get();
         $perCategory = Category::withCount('assets')->orderByDesc('assets_count')->get();
@@ -53,5 +53,37 @@ class DashboardController extends Controller
             'totalCompanies', 'totalCategories', 'signedAssets', 'recentAssets', 'recentActivity',
             'perCompany', 'perCategory', 'assetsPerMonth', 'issuedDays'
         ));
+    }
+
+    /** AJAX: paginated Recent Assets card body. */
+    public function recentAssets()
+    {
+        $recentAssets = $this->recentAssetsPaginator();
+
+        return view('dashboard._recent-assets', compact('recentAssets'));
+    }
+
+    /** AJAX: paginated Recent Activity card body. */
+    public function recentActivity()
+    {
+        $recentActivity = $this->recentActivityPaginator();
+
+        return view('dashboard._recent-activity', compact('recentActivity'));
+    }
+
+    private function recentAssetsPaginator()
+    {
+        return Asset::with(['company', 'category', 'model', 'assignee'])
+            ->latest()
+            ->simplePaginate(6, ['*'], 'assetsPage')
+            ->withPath(route('dashboard.recent-assets'));
+    }
+
+    private function recentActivityPaginator()
+    {
+        return Activity::with('causer')
+            ->latest()
+            ->simplePaginate(8, ['*'], 'activityPage')
+            ->withPath(route('dashboard.recent-activity'));
     }
 }

@@ -114,37 +114,10 @@
                             <a href="{{ route('assets.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">View all →</a>
                         @endcan
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="elegant-table">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-3">Asset Tag</th>
-                                    <th class="px-4 py-3">Model</th>
-                                    <th class="px-4 py-3">Assigned</th>
-                                    <th class="px-4 py-3">Signed</th>
-                                    <th class="px-4 py-3">Snipe-IT</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                                @forelse ($recentAssets as $a)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30">
-                                        <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                                            @can('view assets')
-                                                <a href="{{ route('assets.show', $a) }}" class="hover:underline">{{ $a->asset_tag }}</a>
-                                            @else
-                                                {{ $a->asset_tag }}
-                                            @endcan
-                                        </td>
-                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->model?->name }}</td>
-                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $a->assignee?->name ?? '—' }}</td>
-                                        <td class="px-4 py-3"><x-status-badge :status="$a->accountability_signed" /></td>
-                                        <td class="px-4 py-3"><x-status-badge :status="$a->accountability_uploaded_snipeit" /></td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">No assets yet.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                    <div x-data="ajaxPager" @click="go($event)" :class="loading && 'opacity-50 pointer-events-none transition'">
+                        <div data-pager-body>
+                            @include('dashboard._recent-assets')
+                        </div>
                     </div>
                 </div>
 
@@ -153,19 +126,11 @@
                     <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                         <h3 class="font-semibold text-gray-800 dark:text-gray-100">Recent Activity</h3>
                     </div>
-                    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @forelse ($recentActivity as $log)
-                            <li class="px-6 py-3 text-sm">
-                                <p class="text-gray-800 dark:text-gray-200">
-                                    <span class="font-medium">{{ $log->causer?->name ?? 'System' }}</span>
-                                    {{ $log->description }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $log->created_at->diffForHumans() }}</p>
-                            </li>
-                        @empty
-                            <li class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">No activity recorded yet.</li>
-                        @endforelse
-                    </ul>
+                    <div x-data="ajaxPager" @click="go($event)" :class="loading && 'opacity-50 pointer-events-none transition'">
+                        <div data-pager-body>
+                            @include('dashboard._recent-activity')
+                        </div>
+                    </div>
                 </div>
             </div>
 
