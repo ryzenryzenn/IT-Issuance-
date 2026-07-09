@@ -3,6 +3,37 @@
 @php $assigneeValue = old('assignee', $asset->assignee_id ? $asset->assignee_type.':'.$asset->assignee_id : ''); @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {{-- Scan a 1D barcode or QR code to auto-fill the serial number (and model, for our own QR codes) --}}
+    <div class="md:col-span-2" x-data="barcodeScanner" @keydown.window.escape="stop()">
+        <button type="button" @click="toggle()"
+                class="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V5a1 1 0 011-1h2M4 17v2a1 1 0 001 1h2m10-16h2a1 1 0 011 1v2m-3 13h2a1 1 0 001-1v-2M7 8v8m3-8v8m4-8v8m3-8v8" />
+            </svg>
+            <span x-text="open ? 'Close scanner' : 'Scan barcode / QR'"></span>
+        </button>
+        <div x-show="open" x-cloak class="mt-3">
+            <div x-show="cameras.length > 1" class="mb-2 max-w-sm">
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Camera</label>
+                <select x-model="cameraId" @change="changeCamera()"
+                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
+                    <template x-for="cam in cameras" :key="cam.id">
+                        <option :value="cam.id" x-text="cam.label"></option>
+                    </template>
+                </select>
+            </div>
+            <div :id="scannerId" class="max-w-sm rounded-md overflow-hidden"></div>
+            <p x-show="status" x-text="status" class="text-xs text-gray-500 dark:text-gray-400 mt-2"></p>
+            <div x-show="error" x-cloak class="mt-2 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-3 text-sm text-red-700 dark:text-red-200">
+                <p class="font-medium mb-0.5">Scanner problem</p>
+                <p x-text="error"></p>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Tip: a USB barcode scanner also works — click into the Serial Number box and scan.
+            </p>
+        </div>
+    </div>
+
     <div>
         <x-input-label for="company_id" value="Company *" />
         <select id="company_id" name="company_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm" required>
@@ -50,19 +81,7 @@
 
     <div>
         <x-input-label for="assignee" value="Assigned To" />
-        <select id="assignee" name="assignee" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
-            <option value="">— Unassigned —</option>
-            <optgroup label="Employees">
-                @foreach ($employees as $e)
-                    <option value="employee:{{ $e->id }}" @selected($assigneeValue === 'employee:'.$e->id)>{{ $e->name }}</option>
-                @endforeach
-            </optgroup>
-            <optgroup label="Locations (shared / generic asset)">
-                @foreach ($locations as $l)
-                    <option value="location:{{ $l->id }}" @selected($assigneeValue === 'location:'.$l->id)>{{ $l->name }}</option>
-                @endforeach
-            </optgroup>
-        </select>
+        <x-assignee-select id="assignee" name="assignee" :employees="$employees" :locations="$locations" :selected="$assigneeValue" />
         <x-input-error :messages="$errors->get('assignee_id')" class="mt-1" />
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Pick a person, or a location for a shared/generic asset anyone can use.</p>
     </div>

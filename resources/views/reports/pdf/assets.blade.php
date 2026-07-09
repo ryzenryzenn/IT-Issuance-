@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-    <h1>Asset Inventory Report</h1>
+    <h1>Asset Issuance Report</h1>
     <div class="meta">
         Generated: {{ $generatedAt->format('Y-m-d H:i') }} ·
         Filters: {{ collect($filters)->filter()->map(fn($v, $k) => "$k=$v")->join(', ') ?: 'none' }}

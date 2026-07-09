@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Permission as Perm;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -13,21 +14,7 @@ class RoleAndPermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = [
-            'view assets', 'create assets', 'update assets', 'delete assets', 'transfer assets',
-            'view companies', 'create companies', 'update companies', 'delete companies',
-            'view categories', 'create categories', 'update categories', 'delete categories',
-            'view locations', 'create locations', 'update locations', 'delete locations',
-            'view asset models', 'create asset models', 'update asset models', 'delete asset models',
-            'view employees', 'create employees', 'update employees', 'delete employees',
-            'view users', 'create users', 'update users', 'delete users',
-            'view audit logs',
-            'upload accountability files', 'delete accountability files',
-            'export reports',
-            'view trash', 'restore records', 'force delete records',
-        ];
-
-        foreach ($permissions as $name) {
+        foreach (Perm::values() as $name) {
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
@@ -35,23 +22,27 @@ class RoleAndPermissionSeeder extends Seeder
         $itStaff = Role::firstOrCreate(['name' => 'IT Staff', 'guard_name' => 'web']);
         $viewer  = Role::firstOrCreate(['name' => 'Viewer',   'guard_name' => 'web']);
 
+        // Admin: everything.
         $admin->syncPermissions(Permission::all());
 
-        $itStaff->syncPermissions([
-            'view assets', 'create assets', 'update assets', 'delete assets', 'transfer assets',
-            'view companies', 'create companies', 'update companies',
-            'view categories', 'create categories', 'update categories',
-            'view locations', 'create locations', 'update locations',
-            'view asset models', 'create asset models', 'update asset models',
-            'view employees', 'create employees', 'update employees',
-            'view audit logs',
-            'upload accountability files', 'delete accountability files',
-            'export reports',
-        ]);
+        // IT Staff: manage the asset workflow, but not users/roles/trash or destructive deletes on reference data.
+        $itStaff->syncPermissions(Perm::names([
+            Perm::ViewAssets, Perm::CreateAssets, Perm::UpdateAssets, Perm::DeleteAssets, Perm::TransferAssets,
+            Perm::ViewCompanies, Perm::CreateCompanies, Perm::UpdateCompanies,
+            Perm::ViewCategories, Perm::CreateCategories, Perm::UpdateCategories,
+            Perm::ViewLocations, Perm::CreateLocations, Perm::UpdateLocations,
+            Perm::ViewAssetModels, Perm::CreateAssetModels, Perm::UpdateAssetModels,
+            Perm::ViewEmployees, Perm::CreateEmployees, Perm::UpdateEmployees,
+            Perm::ViewAuditLogs,
+            Perm::UploadAccountabilityFiles, Perm::DeleteAccountabilityFiles,
+            Perm::ExportReports,
+        ]));
 
-        $viewer->syncPermissions([
-            'view assets', 'view companies', 'view categories',
-            'view locations', 'view asset models', 'view employees', 'export reports',
-        ]);
+        // Viewer: read-only + exports.
+        $viewer->syncPermissions(Perm::names([
+            Perm::ViewAssets, Perm::ViewCompanies, Perm::ViewCategories,
+            Perm::ViewLocations, Perm::ViewAssetModels, Perm::ViewEmployees,
+            Perm::ExportReports,
+        ]));
     }
 }

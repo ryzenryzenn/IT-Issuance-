@@ -12,7 +12,7 @@
     @endforelse
 </ul>
 @if ($recentActivity->hasPages())
-    <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-700">
+    <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-700" data-pagination>
         {{ $recentActivity->links() }}
     </div>
 @endif

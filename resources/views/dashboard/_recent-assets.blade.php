@@ -14,7 +14,7 @@
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30">
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
                         @can('view assets')
-                            <a href="{{ route('assets.show', $a) }}" class="hover:underline">{{ $a->asset_tag }}</a>
+                            <a href="{{ route('assets.index') }}" class="hover:underline">{{ $a->asset_tag }}</a>
                         @else
                             {{ $a->asset_tag }}
                         @endcan
@@ -31,7 +31,7 @@
     </table>
 </div>
 @if ($recentAssets->hasPages())
-    <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-700">
+    <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-700" data-pagination>
         {{ $recentAssets->links() }}
     </div>
 @endif

@@ -94,19 +94,7 @@
                             @csrf
                             <div>
                                 <x-input-label for="to_assignee" value="Transfer to (new assignee) *" />
-                                <select id="to_assignee" name="to_assignee" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
-                                    <option value="">— Select —</option>
-                                    <optgroup label="Employees">
-                                        @foreach ($employees as $e)
-                                            <option value="employee:{{ $e->id }}">{{ $e->name }}</option>
-                                        @endforeach
-                                    </optgroup>
-                                    <optgroup label="Locations (shared / generic)">
-                                        @foreach ($locations as $l)
-                                            <option value="location:{{ $l->id }}">{{ $l->name }}</option>
-                                        @endforeach
-                                    </optgroup>
-                                </select>
+                                <x-assignee-select id="to_assignee" name="to_assignee" :employees="$employees" :locations="$locations" placeholder="— Select —" :required="true" />
                                 <x-input-error :messages="$errors->get('to_assignee_id')" class="mt-1" />
                             </div>
                             <div>

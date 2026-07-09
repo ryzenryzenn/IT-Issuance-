@@ -12,6 +12,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -48,8 +49,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         ->parameters(['asset-models' => 'assetModel'])
         ->except(['show']);
 
-    // Users (Admin only)
+    // Users & Roles (Admin only)
     Route::resource('users', UserController::class)->except(['show']);
+    Route::resource('roles', RoleController::class)->except(['show']);
 
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
