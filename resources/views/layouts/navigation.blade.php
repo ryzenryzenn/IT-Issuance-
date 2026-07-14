@@ -55,6 +55,15 @@
             </x-sidebar-link>
         @endcan
 
+        @can('view tickets')
+            <x-sidebar-link :href="route('board.index')" :active="request()->routeIs('board.*')">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v8a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z" />
+                </svg>
+                <span>Board</span>
+            </x-sidebar-link>
+        @endcan
+
         @can('view companies')
             <x-sidebar-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">

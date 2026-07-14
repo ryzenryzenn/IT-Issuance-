@@ -58,6 +58,12 @@ enum Permission: string
     case UpdateRoles = 'update roles';
     case DeleteRoles = 'delete roles';
 
+    // Board (tickets / sticky notes)
+    case ViewTickets   = 'view tickets';
+    case CreateTickets = 'create tickets';
+    case UpdateTickets = 'update tickets';
+    case DeleteTickets = 'delete tickets';
+
     // Cross-cutting
     case ViewAuditLogs             = 'view audit logs';
     case UploadAccountabilityFiles = 'upload accountability files';

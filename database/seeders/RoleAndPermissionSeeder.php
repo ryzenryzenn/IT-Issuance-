@@ -33,6 +33,7 @@ class RoleAndPermissionSeeder extends Seeder
             Perm::ViewLocations, Perm::CreateLocations, Perm::UpdateLocations,
             Perm::ViewAssetModels, Perm::CreateAssetModels, Perm::UpdateAssetModels,
             Perm::ViewEmployees, Perm::CreateEmployees, Perm::UpdateEmployees,
+            Perm::ViewTickets, Perm::CreateTickets, Perm::UpdateTickets, Perm::DeleteTickets,
             Perm::ViewAuditLogs,
             Perm::UploadAccountabilityFiles, Perm::DeleteAccountabilityFiles,
             Perm::ExportReports,
@@ -42,6 +43,7 @@ class RoleAndPermissionSeeder extends Seeder
         $viewer->syncPermissions(Perm::names([
             Perm::ViewAssets, Perm::ViewCompanies, Perm::ViewCategories,
             Perm::ViewLocations, Perm::ViewAssetModels, Perm::ViewEmployees,
+            Perm::ViewTickets,
             Perm::ExportReports,
         ]));
     }

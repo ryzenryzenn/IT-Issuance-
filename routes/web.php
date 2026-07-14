@@ -5,6 +5,7 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AssetModelController;
 use App\Http\Controllers\AssetTransferController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BoardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeController;
@@ -58,6 +59,13 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('reports/assets/pdf', [ReportController::class, 'assetsPdf'])->name('reports.assets.pdf');
     Route::get('reports/assets/excel', [ReportController::class, 'assetsExcel'])->name('reports.assets.excel');
     Route::get('reports/assets/csv', [ReportController::class, 'assetsCsv'])->name('reports.assets.csv');
+
+    // Board (Kanban: tickets & sticky notes)
+    Route::get('board', [BoardController::class, 'index'])->name('board.index');
+    Route::post('board/move', [BoardController::class, 'move'])->name('board.move');
+    Route::post('board', [BoardController::class, 'store'])->name('board.store');
+    Route::put('board/{ticket}', [BoardController::class, 'update'])->name('board.update');
+    Route::delete('board/{ticket}', [BoardController::class, 'destroy'])->name('board.destroy');
 
     // Audit Logs
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');

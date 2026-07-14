@@ -75,7 +75,7 @@ class DashboardController extends Controller
     {
         return Asset::with(['company', 'category', 'model', 'assignee'])
             ->latest()
-            ->simplePaginate(6, ['*'], 'assetsPage')
+            ->simplePaginate(5, ['*'], 'assetsPage')
             ->withPath(route('dashboard.recent-assets'));
     }
 
@@ -83,7 +83,7 @@ class DashboardController extends Controller
     {
         return Activity::with('causer')
             ->latest()
-            ->simplePaginate(8, ['*'], 'activityPage')
+            ->simplePaginate(5, ['*'], 'activityPage')
             ->withPath(route('dashboard.recent-activity'));
     }
 }

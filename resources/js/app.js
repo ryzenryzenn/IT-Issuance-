@@ -4,11 +4,13 @@ import Alpine from 'alpinejs';
 import Swal from 'sweetalert2';
 import ApexCharts from 'apexcharts';
 import { Html5Qrcode } from 'html5-qrcode';
+import Sortable from 'sortablejs';
 
 window.Alpine = Alpine;
 window.Swal = Swal;
 window.ApexCharts = ApexCharts;
 window.Html5Qrcode = Html5Qrcode;
+window.Sortable = Sortable;
 
 // Tracks which row action menu (kebab) is currently open — only one at a time.
 Alpine.store('menu', { current: null });
@@ -161,6 +163,60 @@ Alpine.data('barcodeScanner', () => ({
 }));
 
 Alpine.start();
+
+/**
+ * Kanban board — drag sticky notes between columns and reorder them.
+ * Persists the new column + order to the server via AJAX.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const lists = document.querySelectorAll('[data-kanban-list]');
+    if (! lists.length) return;
+
+    const moveUrl = document.querySelector('meta[name="board-move-url"]')?.content;
+    const token   = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    const refreshCounts = () => {
+        document.querySelectorAll('[data-kanban-list]').forEach((l) => {
+            const badge = document.querySelector(`[data-count-for="${l.dataset.kanbanList}"]`);
+            if (badge) badge.textContent = l.querySelectorAll('[data-ticket-id]').length;
+        });
+    };
+
+    lists.forEach((list) => {
+        Sortable.create(list, {
+            group: 'kanban',
+            animation: 150,
+            ghostClass: 'kanban-ghost',
+            // Let buttons/links/forms inside a card stay clickable.
+            filter: 'a, button, form, input, select, textarea',
+            preventOnFilter: false,
+            onEnd: async (evt) => {
+                const target = evt.to;
+                const status = target.dataset.kanbanList;
+                const id     = Number(evt.item.dataset.ticketId);
+                const ids    = Array.from(target.querySelectorAll('[data-ticket-id]'))
+                    .map((el) => Number(el.dataset.ticketId));
+
+                refreshCounts();
+
+                try {
+                    const res = await fetch(moveUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                        },
+                        body: JSON.stringify({ id, status, ids }),
+                    });
+                    if (! res.ok) throw new Error('save failed');
+                } catch (e) {
+                    if (window.showToast) window.showToast('error', 'Could not save — refresh and try again.');
+                }
+            },
+        });
+    });
+});
 
 /**
  * Reusable toast (top-right, auto-dismiss).
