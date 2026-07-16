@@ -36,15 +36,26 @@
                 <span class="font-medium">technical support tickets</span>.
             </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                @foreach ($columns as $key => $label)
-                    <div class="bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col">
+            <div class="flex gap-4 overflow-x-auto pb-3 items-start">
+                @foreach ($boardColumns as $col)
+                    @php $key = $col->key; @endphp
+                    <div class="w-72 shrink-0 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col">
                         <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $label }}</h3>
-                            <span data-count-for="{{ $key }}"
-                                  class="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                                {{ ($tickets[$key] ?? collect())->count() }}
-                            </span>
+                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{{ $col->name }}</h3>
+                            <div class="flex items-center gap-1.5">
+                                <span data-count-for="{{ $key }}"
+                                      class="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                    {{ ($tickets[$key] ?? collect())->count() }}
+                                </span>
+                                @can('delete tickets')
+                                    <form action="{{ route('board.columns.destroy', $col) }}" method="POST"
+                                          data-confirm="Remove the '{{ $col->name }}' column? (It must be empty.)">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" title="Remove column"
+                                                class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 text-lg leading-none">&times;</button>
+                                    </form>
+                                @endcan
+                            </div>
                         </div>
 
                         {{-- droppable list --}}
@@ -92,10 +103,15 @@
                                         <p class="mt-1 text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">{{ \Illuminate\Support\Str::limit($t->body, 140) }}</p>
                                     @endif
 
+                                    @php
+                                        $typeMeta = [
+                                            'support'    => ['Support', 'bg-gray-700 text-white'],
+                                            'temp_issue' => ['Temp Issue', 'bg-indigo-600 text-white'],
+                                            'deployment' => ['Deployment', 'bg-teal-600 text-white'],
+                                        ][$t->type] ?? ['Support', 'bg-gray-700 text-white'];
+                                    @endphp
                                     <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded {{ $t->type === 'temp_issue' ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-white' }}">
-                                            {{ $t->type === 'temp_issue' ? 'Temp Issue' : 'Support' }}
-                                        </span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded {{ $typeMeta[1] }}">{{ $typeMeta[0] }}</span>
                                         <span class="text-[10px] px-1.5 py-0.5 rounded {{ $priorityClasses[$t->priority] }}">{{ ucfirst($t->priority) }}</span>
                                         @if ($t->asset)
                                             <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600">
@@ -118,12 +134,33 @@
                         </div>
                     </div>
                 @endforeach
+
+                {{-- Add a new status column --}}
+                @can('create tickets')
+                    <div class="w-64 shrink-0" x-data="{ open: false }">
+                        <button type="button" x-show="!open" @click="open = true"
+                                class="w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 py-3 text-sm font-medium">
+                            + Add Board
+                        </button>
+                        <form x-show="open" x-cloak method="POST" action="{{ route('board.columns.store') }}"
+                              class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+                            @csrf
+                            <input type="text" name="name" maxlength="50" required placeholder="Column name (status)"
+                                   class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
+                            <div class="flex justify-end gap-2">
+                                <button type="button" @click="open = false"
+                                        class="px-3 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300">Cancel</button>
+                                <button type="submit" class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 hover:bg-indigo-700 text-white">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                @endcan
             </div>
         </div>
     </div>
 
     {{-- Create / Edit modal --}}
     @can('create tickets')
-        @include('board._modal', ['assets' => $assets, 'employees' => $employees, 'columns' => $columns])
+        @include('board._modal', ['assets' => $assets, 'employees' => $employees, 'boardColumns' => $boardColumns])
     @endcan
 </x-app-layout>

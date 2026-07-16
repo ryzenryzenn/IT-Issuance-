@@ -63,6 +63,8 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     // Board (Kanban: tickets & sticky notes)
     Route::get('board', [BoardController::class, 'index'])->name('board.index');
     Route::post('board/move', [BoardController::class, 'move'])->name('board.move');
+    Route::post('board/columns', [BoardController::class, 'storeColumn'])->name('board.columns.store');
+    Route::delete('board/columns/{column}', [BoardController::class, 'destroyColumn'])->name('board.columns.destroy');
     Route::post('board', [BoardController::class, 'store'])->name('board.store');
     Route::put('board/{ticket}', [BoardController::class, 'update'])->name('board.update');
     Route::delete('board/{ticket}', [BoardController::class, 'destroy'])->name('board.destroy');

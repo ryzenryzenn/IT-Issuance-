@@ -19,7 +19,7 @@ class Ticket extends Model
     use HasFactory, SoftDeletes, LogsActivity;
 
     public const STATUSES = ['todo', 'in_progress', 'done'];
-    public const TYPES    = ['support', 'temp_issue'];
+    public const TYPES    = ['support', 'temp_issue', 'deployment'];
 
     protected $fillable = [
         'title', 'body', 'type', 'status', 'priority', 'color',

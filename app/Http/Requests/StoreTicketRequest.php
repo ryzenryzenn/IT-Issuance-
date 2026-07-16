@@ -20,7 +20,7 @@ class StoreTicketRequest extends FormRequest
             'title'       => ['required', 'string', 'max:255'],
             'body'        => ['nullable', 'string'],
             'type'        => ['required', Rule::in(Ticket::TYPES)],
-            'status'      => ['required', Rule::in(Ticket::STATUSES)],
+            'status'      => ['required', 'exists:board_columns,key'],
             'priority'    => ['required', Rule::in(['low', 'normal', 'high'])],
             'color'       => ['required', Rule::in(['yellow', 'blue', 'green', 'pink', 'purple'])],
             'asset_id'    => ['nullable', 'exists:assets,id'],

@@ -1,4 +1,4 @@
-@props(['assets', 'employees', 'columns'])
+@props(['assets', 'employees', 'boardColumns'])
 
 <div x-data="ticketModal()"
      @open-ticket-modal.window="openCreate()"
@@ -37,14 +37,16 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
                                 <option value="support">Support / Ticket</option>
                                 <option value="temp_issue">Temporary Asset Issue</option>
+                                <option value="deployment">Deployment</option>
+
                             </select>
                         </div>
                         <div>
                             <x-input-label for="t_status" value="Action" />
                             <select id="t_status" name="status" x-model="form.status"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 text-sm">
-                                @foreach ($columns as $key => $label)
-                                    <option value="{{ $key }}">{{ $label }}</option>
+                                @foreach ($boardColumns as $col)
+                                    <option value="{{ $col->key }}">{{ $col->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -126,7 +128,8 @@
 @push('scripts')
 <script>
     function ticketModal() {
-        const blank = { id: null, title: '', body: '', type: 'support', status: 'todo', priority: 'normal', color: 'yellow', asset_id: '', employee_id: '', due_date: '' };
+        const firstStatus = @js($boardColumns->first()?->key ?? 'todo');
+        const blank = { id: null, title: '', body: '', type: 'support', status: firstStatus, priority: 'normal', color: 'yellow', asset_id: '', employee_id: '', due_date: '' };
         return {
             open: false,
             editing: false,
