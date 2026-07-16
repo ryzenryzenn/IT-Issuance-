@@ -39,7 +39,7 @@
             <div class="flex gap-4 overflow-x-auto pb-3 items-start">
                 @foreach ($boardColumns as $col)
                     @php $key = $col->key; @endphp
-                    <div class="w-72 shrink-0 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col">
+                    <div class="w-64 shrink-0 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col">
                         <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
                             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{{ $col->name }}</h3>
                             <div class="flex items-center gap-1.5">
@@ -59,74 +59,108 @@
                         </div>
 
                         {{-- droppable list --}}
-                        <div data-kanban-list="{{ $key }}" class="p-3 space-y-3 min-h-[320px]">
+                        <div data-kanban-list="{{ $key }}" class="p-2 space-y-2 min-h-[280px]">
                             @forelse ($tickets[$key] ?? [] as $t)
+                                @php
+                                    $payload = [
+                                        'id'          => $t->id,
+                                        'title'       => $t->title,
+                                        'body'        => $t->body,
+                                        'type'        => $t->type,
+                                        'status'      => $t->status,
+                                        'priority'    => $t->priority,
+                                        'color'       => $t->color,
+                                        'asset_id'    => $t->asset_id,
+                                        'employee_id' => $t->employee_id,
+                                        'due_date'    => optional($t->due_date)->toDateString(),
+                                    ];
+                                    $typeLabels = ['support' => 'Support', 'temp_issue' => 'Temp Issue', 'deployment' => 'Deployment'];
+                                    $typeBorder = ['support' => 'border-l-gray-400', 'temp_issue' => 'border-l-indigo-500', 'deployment' => 'border-l-teal-500'][$t->type] ?? 'border-l-gray-400';
+                                    $priorityDot = ['high' => 'bg-red-500', 'normal' => 'bg-gray-400', 'low' => 'bg-gray-300'][$t->priority] ?? 'bg-gray-400';
+                                    $cardTitle = ($typeLabels[$t->type] ?? 'Support').' · '.ucfirst($t->priority).($t->employee ? ' · '.$t->employee->name : '');
+                                @endphp
+                                @php
+                                    $typeChip = ['support' => 'bg-gray-700 text-white', 'temp_issue' => 'bg-indigo-600 text-white', 'deployment' => 'bg-teal-600 text-white'][$t->type] ?? 'bg-gray-700 text-white';
+                                    $columnName = optional($boardColumns->firstWhere('key', $t->status))->name ?? $t->status;
+                                @endphp
                                 <div data-ticket-id="{{ $t->id }}"
-                                     class="group relative rounded-lg border shadow-sm p-3 cursor-grab active:cursor-grabbing {{ $colorClasses[$t->color] ?? $colorClasses['yellow'] }}">
-
-                                    @php
-                                        $payload = [
-                                            'id'          => $t->id,
-                                            'title'       => $t->title,
-                                            'body'        => $t->body,
-                                            'type'        => $t->type,
-                                            'status'      => $t->status,
-                                            'priority'    => $t->priority,
-                                            'color'       => $t->color,
-                                            'asset_id'    => $t->asset_id,
-                                            'employee_id' => $t->employee_id,
-                                            'due_date'    => optional($t->due_date)->toDateString(),
-                                        ];
-                                    @endphp
-                                    <div class="flex items-start justify-between gap-2">
-                                        <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 break-words">{{ $t->title }}</p>
-                                        @if (Auth::user()->can('update', $t) || Auth::user()->can('delete', $t))
-                                            <x-actions-menu>
-                                                @can('update', $t)
-                                                    <button type="button" class="menu-item"
-                                                            data-ticket="{{ json_encode($payload) }}"
-                                                            onclick="window.dispatchEvent(new CustomEvent('edit-ticket', { detail: JSON.parse(this.dataset.ticket) }))">
-                                                        Edit
-                                                    </button>
-                                                @endcan
-                                                @can('delete', $t)
-                                                    <form action="{{ route('board.destroy', $t) }}" method="POST" data-confirm="Delete this note?">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="menu-item menu-item-danger">Delete</button>
-                                                    </form>
-                                                @endcan
-                                            </x-actions-menu>
-                                        @endif
+                                     x-data="{ show: false, x: 0, y: 0,
+                                        place(el) {
+                                            const r = el.getBoundingClientRect(), w = 288, gap = 8;
+                                            let x = r.right + gap;
+                                            if (x + w > window.innerWidth) x = Math.max(gap, r.left - w - gap);
+                                            this.x = x;
+                                            this.y = Math.min(r.top, window.innerHeight - 240);
+                                        } }"
+                                     @mouseenter="place($event.currentTarget); show = true"
+                                     @mouseleave="show = false"
+                                     class="group relative rounded-md border border-l-4 {{ $typeBorder }} shadow-sm px-2.5 py-2 cursor-grab active:cursor-grabbing {{ $colorClasses[$t->color] ?? $colorClasses['yellow'] }}">
+                                    <div class="flex items-start justify-between gap-1.5">
+                                        <p class="text-xs font-medium text-gray-900 dark:text-gray-100 leading-snug break-words line-clamp-2">{{ $t->title }}</p>
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            <span class="w-2 h-2 rounded-full {{ $priorityDot }}"></span>
+                                            @if (Auth::user()->can('update', $t) || Auth::user()->can('delete', $t))
+                                                <div class="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition">
+                                                    <x-actions-menu>
+                                                        @can('update', $t)
+                                                            <button type="button" class="menu-item"
+                                                                    data-ticket="{{ json_encode($payload) }}"
+                                                                    onclick="window.dispatchEvent(new CustomEvent('edit-ticket', { detail: JSON.parse(this.dataset.ticket) }))">Edit</button>
+                                                        @endcan
+                                                        @can('delete', $t)
+                                                            <form action="{{ route('board.destroy', $t) }}" method="POST" data-confirm="Delete this note?">
+                                                                @csrf @method('DELETE')
+                                                                <button type="submit" class="menu-item menu-item-danger">Delete</button>
+                                                            </form>
+                                                        @endcan
+                                                    </x-actions-menu>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
 
-                                    @if ($t->body)
-                                        <p class="mt-1 text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">{{ \Illuminate\Support\Str::limit($t->body, 140) }}</p>
+                                    @if ($t->asset || $t->due_date)
+                                        <div class="mt-1.5 flex items-center flex-wrap gap-2 text-[10px]">
+                                            @if ($t->asset)
+                                                <span class="px-1 py-0.5 rounded bg-white/70 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300/70 dark:border-gray-600">{{ $t->asset->asset_tag }}</span>
+                                            @endif
+                                            @if ($t->due_date)
+                                                <span class="{{ $t->isOverdue() ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-500 dark:text-gray-400' }}">
+                                                    {{ $t->isOverdue() ? '⚠ ' : '' }}{{ $t->due_date->format('M j') }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     @endif
 
-                                    @php
-                                        $typeMeta = [
-                                            'support'    => ['Support', 'bg-gray-700 text-white'],
-                                            'temp_issue' => ['Temp Issue', 'bg-indigo-600 text-white'],
-                                            'deployment' => ['Deployment', 'bg-teal-600 text-white'],
-                                        ][$t->type] ?? ['Support', 'bg-gray-700 text-white'];
-                                    @endphp
-                                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded {{ $typeMeta[1] }}">{{ $typeMeta[0] }}</span>
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded {{ $priorityClasses[$t->priority] }}">{{ ucfirst($t->priority) }}</span>
-                                        @if ($t->asset)
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600">
-                                                {{ $t->asset->asset_tag }}
-                                            </span>
-                                        @endif
-                                        @if ($t->employee)
-                                            <span class="text-[10px] text-gray-600 dark:text-gray-300">👤 {{ $t->employee->name }}</span>
-                                        @endif
-                                        @if ($t->due_date)
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded {{ $t->isOverdue() ? 'bg-red-600 text-white' : 'bg-white/70 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600' }}">
-                                                due {{ $t->due_date->format('M j') }}
-                                            </span>
-                                        @endif
-                                    </div>
+                                    {{-- Hover: full details popover --}}
+                                    <template x-teleport="body">
+                                        <div x-show="show" x-cloak x-transition.opacity.duration.100ms
+                                             :style="`position:fixed; top:${y}px; left:${x}px; width:18rem;`"
+                                             class="z-50 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl p-3 text-xs pointer-events-none">
+                                            <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 break-words">{{ $t->title }}</p>
+                                            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded {{ $typeChip }}">{{ $typeLabels[$t->type] ?? 'Support' }}</span>
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded {{ $priorityClasses[$t->priority] }}">{{ ucfirst($t->priority) }} priority</span>
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ $columnName }}</span>
+                                            </div>
+                                            @if ($t->body)
+                                                <p class="mt-2 text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words">{{ $t->body }}</p>
+                                            @endif
+                                            <dl class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1 text-gray-500 dark:text-gray-400">
+                                                @if ($t->asset)
+                                                    <div class="flex justify-between gap-2"><dt>Asset</dt><dd class="text-gray-700 dark:text-gray-200">{{ $t->asset->asset_tag }}</dd></div>
+                                                @endif
+                                                @if ($t->employee)
+                                                    <div class="flex justify-between gap-2"><dt>Person</dt><dd class="text-gray-700 dark:text-gray-200">{{ $t->employee->name }}</dd></div>
+                                                @endif
+                                                @if ($t->due_date)
+                                                    <div class="flex justify-between gap-2"><dt>Due / return</dt><dd class="{{ $t->isOverdue() ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-200' }}">{{ $t->due_date->format('M j, Y') }}</dd></div>
+                                                @endif
+                                                <div class="flex justify-between gap-2"><dt>Added by</dt><dd class="text-gray-700 dark:text-gray-200">{{ $t->creator?->name ?? '—' }}</dd></div>
+                                                <div class="flex justify-between gap-2"><dt>Created</dt><dd class="text-gray-700 dark:text-gray-200">{{ $t->created_at->format('M j, Y') }}</dd></div>
+                                            </dl>
+                                        </div>
+                                    </template>
                                 </div>
                             @empty
                                 <p class="text-xs text-center text-gray-400 dark:text-gray-500 py-6">Drop notes here</p>
